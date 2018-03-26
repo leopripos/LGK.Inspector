@@ -49,7 +49,7 @@ namespace LGK.Inspector
                     componentFields = EMPTY_FIELD_INFOS;
 
                 IPropertyInfo[] componentProperties;
-                if ((modeMask & EInspectorMode.Field) == EInspectorMode.Field)
+                if ((modeMask & EInspectorMode.Property) == EInspectorMode.Property)
                     componentProperties = ExtractProperties(componentType);
                 else
                     componentProperties = EMPTY_PROPERTY_INFOS;
