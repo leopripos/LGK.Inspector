@@ -10,7 +10,7 @@ This is simple inspector for Unity Game Engine for Svelto.ECS (https://github.co
 * Support property (setter/getter only)
 * Support custom component drawer (like unity custom inspector)
 * Support custom type drawer (like unity property drawer)
-* \** Not Support colletion (array/struct)
+* \** Not Support colletion (array/list/dictionary)
 * \** Can't automatically draw class or struct (you need create your own type drawer)
 
 \** need suggestion how to implement this :D
