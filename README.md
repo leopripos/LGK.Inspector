@@ -39,4 +39,4 @@ public static class EInspectorMode
 ```
 
 ## Examples
-* Simple Example **: https://github.com/NED-Studio/LGK.Inspector.Example
+* Simple Example : https://github.com/NED-Studio/LGK.Inspector.Example
