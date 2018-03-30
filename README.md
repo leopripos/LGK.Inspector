@@ -30,6 +30,11 @@ public interface IInspectorService
     void Unregister(string group, int id);
 }
 
+public static class InspectorUtility
+{
+    public static IEntityInfo ExtractEntityInfo(int id, object[] componensts, byte modeMask);
+}
+
 public static class EInspectorMode
 {
     public const byte All = byte.MaxValue;
