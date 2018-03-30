@@ -32,7 +32,7 @@ public interface IInspectorService
 
 public static class InspectorUtility
 {
-    public static IEntityInfo ExtractEntityInfo(int id, object[] componensts, byte modeMask);
+    public static IEntityInfo ExtractEntityInfo(int id, object[] components, byte modeMask);
 }
 
 public static class EInspectorMode
