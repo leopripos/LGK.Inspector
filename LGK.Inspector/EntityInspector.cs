@@ -9,5 +9,4 @@ namespace LGK.Inspector
     {
         public List<IEntityInfo> Items = new List<IEntityInfo>();
     }
-
 }

@@ -1,16 +1,18 @@
 // See LICENSE file in the root directory
 //
 
+using LGK.Inspector.Internal;
 using System;
-using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 namespace LGK.Inspector
 {
     public class DefaultComponentDrawer : IComponentDrawer
     {
         readonly Dictionary<Type, ITypeDrawer> m_TypeDrawers;
+        static Dictionary<Type, IDictionary<int, bool>> m_ComponentToggles = new Dictionary<Type, IDictionary<int, bool>>();
 
         public DefaultComponentDrawer(Dictionary<Type, ITypeDrawer> typeDrawers)
         {
@@ -19,111 +21,190 @@ namespace LGK.Inspector
 
         public void Draw(IComponentInfo componentInfo)
         {
-            componentInfo.ToggleView = GUILayout.Toggle(componentInfo.ToggleView, componentInfo.Name, EditorStyles.foldout);
+            componentInfo.ToggleView = EditorGUILayout.Foldout(componentInfo.ToggleView, componentInfo.Name, EditorStyles.foldout);
 
             if (componentInfo.ToggleView)
             {
                 EditorGUI.indentLevel++;
-                DrawFields(componentInfo);
-                DrawProperties(componentInfo);
+
+                var componentToggle = ResolveComponentToggle(componentInfo);
+                
+                DrawMember(componentInfo.Members, componentInfo.Value, componentToggle);
 
                 EditorGUI.indentLevel--;
             }
         }
 
-        void DrawFields(IComponentInfo componentInfo)
+        IDictionary<int, bool> ResolveComponentToggle(IComponentInfo componentInfo)
         {
-            ITypeDrawer typeDrawer;
-            IFieldInfo field;
+            IDictionary<int, bool> componentToggle;
 
-            var fields = componentInfo.Fields;
-            for (int i = 0; i < fields.Length; i++)
+            if (!m_ComponentToggles.TryGetValue(componentInfo.ComponentType, out componentToggle))
             {
-                field = fields[i];
-                if (m_TypeDrawers.TryGetValue(field.FieldType, out typeDrawer))
-                    typeDrawer.Draw(field, componentInfo.Value);
-                else if (field.FieldType.IsEnum)
-                    DrawEnum(field, componentInfo.Value);
-                else
-                    DrawDefault(field, componentInfo.Value);
+                componentToggle = new Dictionary<int, bool>();
+                var members = componentInfo.Members;
+                for (int i = 0; i < members.Count; i++)
+                {
+                    var member = members[i];
 
+                    if (member.IsContainer || member.TargetType.IsArray)
+                    {
+                        componentToggle.Add(i, false);
+                    }
+                }
+
+                m_ComponentToggles.Add(componentInfo.ComponentType, componentToggle);
+            }
+
+            return componentToggle;
+        }
+
+        void DrawMember(IList<IInternalMemberInfo> members, object owner, IDictionary<int, bool> componentToggle)
+        {
+            int memberId = 0;
+            while (memberId < members.Count)
+            {
+                var member = members[memberId];
+
+                if (member.IsContainer)
+                {
+                    componentToggle[memberId] = EditorGUILayout.Foldout(componentToggle[memberId], member.Name);
+
+                    var value = member.GetValue(owner);
+                    if (value != null && componentToggle[memberId])
+                        DrawChildMember(members, value, ref memberId, member.ChildCount, componentToggle);
+                    else
+                        memberId += member.ChildCount; // Skiping
+                }
+                else {
+                    DrawMember(members[memberId], owner, memberId, componentToggle);
+                }
+
+                memberId++;
             }
         }
 
-        void DrawProperties(IComponentInfo componentInfo)
+        void DrawChildMember(IList<IInternalMemberInfo> members, object owner, ref int memberId, int count, IDictionary<int, bool> componentToggle)
         {
-            ITypeDrawer typeDrawer;
-            IPropertyInfo property;
+            EditorGUI.indentLevel++;
 
-            var properties = componentInfo.Properties;
-            for (int i = 0; i < properties.Length; i++)
+            var lastMemberId = memberId + count;
+            while (memberId < lastMemberId)
             {
-                property = properties[i];
-                if (m_TypeDrawers.TryGetValue(property.PropertyType, out typeDrawer))
-                    typeDrawer.Draw(property, componentInfo.Value);
-                else if (property.PropertyType.IsEnum)
-                    DrawEnum(property, componentInfo.Value);
-                else
-                    DrawDefault(property, componentInfo.Value);
+                memberId++;
 
+                var member = members[memberId];
+
+                if (member.IsContainer)
+                {
+                    componentToggle[memberId] = EditorGUILayout.Foldout(componentToggle[memberId], member.Name);
+
+                    var value = member.GetValue(owner);
+                    if (value != null && componentToggle[memberId])
+                        DrawChildMember(members, value, ref memberId, member.ChildCount, componentToggle);
+                    else
+                        memberId += member.ChildCount; // Skiping
+                }
+                else
+                {
+                    DrawMember(members[memberId], owner, memberId, componentToggle);
+                }
+            }
+
+            EditorGUI.indentLevel--;
+        }
+
+        void DrawMember(IInternalMemberInfo memberInfo, object owner, int memberId, IDictionary<int, bool> componentToggle)
+        {
+            if (memberInfo.TargetType.IsArray)
+                DrawArray(memberInfo, owner, memberId, componentToggle);
+            else if (memberInfo.TargetType.IsEnum)
+                DrawEnum(memberInfo, owner);
+            else
+            {
+                DrawType(memberInfo, owner);
             }
         }
 
-        void DrawEnum(IFieldInfo fieldInfo, object owner)
+        void DrawArray(IInternalMemberInfo memberInfo, object owner, int memberId, IDictionary<int, bool> componentToggle)
         {
-            var value = (Enum)fieldInfo.GetValue(owner);
+            componentToggle[memberId] = EditorGUILayout.Foldout(componentToggle[memberId], memberInfo.Name);
 
-            var newValue = EditorGUILayout.EnumPopup(fieldInfo.Name, value);
+            var value = (Array)memberInfo.GetValue(owner);
 
-            if (value != newValue)
-                fieldInfo.SetValue(owner, newValue);
+            if (value != null && componentToggle[memberId])
+            {
+                ITypeDrawer typeDrawer;
+
+                EditorGUI.indentLevel++;
+
+                if (m_TypeDrawers.TryGetValue(memberInfo.TargetType.GetElementType(), out typeDrawer))
+                {
+                    for (int i = 0; i < value.Length; i++)
+                    {
+                        var itemValue = value.GetValue(i);
+                        var newItemValue = typeDrawer.Draw(memberInfo, itemValue);
+
+                        if (newItemValue != value)
+                            value.SetValue(newItemValue, i);
+                    }
+                }
+                else
+                {
+                    var array = (Array)memberInfo.GetValue(owner);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        DrawDefault(memberInfo, array.GetValue(i));
+                    }
+                }
+
+                EditorGUI.indentLevel--;
+            }
         }
 
-        void DrawEnum(IPropertyInfo propertyInfo, object owner)
+        void DrawEnum(IInternalMemberInfo memberInfo, object owner)
         {
-            var value = (Enum)propertyInfo.GetValue(owner);
+            var value = (Enum)memberInfo.GetValue(owner);
 
-            if (propertyInfo.IsReadOnly)
+            if (memberInfo.IsReadOnly)
             {
-                EditorGUILayout.LabelField(propertyInfo.Name, value.ToString());
+                EditorGUILayout.LabelField(memberInfo.Name, value.ToString());
             }
             else
             {
-                var newValue = EditorGUILayout.EnumPopup(propertyInfo.Name, value);
+                var newValue = EditorGUILayout.EnumPopup(memberInfo.Name, value);
 
                 if (value != newValue)
-                    propertyInfo.SetValue(owner, newValue);
+                    memberInfo.SetValue(owner, newValue);
             }
         }
 
-        void DrawDefault(IFieldInfo fieldInfo, object owner)
+        void DrawType(IInternalMemberInfo memberInfo, object owner)
         {
-            if (fieldInfo.FieldType.IsValueType)
+            var value = memberInfo.GetValue(owner);
+
+            ITypeDrawer typeDrawer;
+            if (m_TypeDrawers.TryGetValue(memberInfo.TargetType, out typeDrawer))
             {
-                EditorGUILayout.LabelField(fieldInfo.Name, fieldInfo.GetValue(owner).ToString());
+                var newValue = typeDrawer.Draw(memberInfo, value);
+
+                if (newValue != value)
+                    memberInfo.SetValue(owner, newValue);
+            }
+            else
+                DrawDefault(memberInfo, value);
+        }
+
+        void DrawDefault(IInternalMemberInfo memberInfo, object memberValue)
+        {
+            if (memberInfo.TargetType.IsValueType)
+            {
+                EditorGUILayout.LabelField(memberInfo.Name, memberValue.ToString());
             }
             else
             {
-                var value = fieldInfo.GetValue(owner);
-
-                EditorGUILayout.LabelField(fieldInfo.Name, value == null ? "null (" + fieldInfo.FieldType.Name + ")" : fieldInfo.FieldType.Name);
+                EditorGUILayout.LabelField(memberInfo.Name, memberValue == null ? "null (" + memberInfo.TargetType.Name + ")" : memberInfo.TargetType.Name);
             }
         }
-
-        void DrawDefault(IPropertyInfo propertyInfo, object owner)
-        {
-            if (propertyInfo.PropertyType.IsValueType)
-            {
-                EditorGUILayout.LabelField(propertyInfo.Name, propertyInfo.GetValue(owner).ToString());
-            }
-            else
-            {
-                var value = propertyInfo.GetValue(owner);
-
-                EditorGUILayout.LabelField(propertyInfo.Name, value == null ? "null (" + propertyInfo.PropertyType.Name + ")" : propertyInfo.PropertyType.Name);
-            }
-        }
-
     }
-
 }

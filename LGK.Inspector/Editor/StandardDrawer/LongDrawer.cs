@@ -13,31 +13,20 @@ namespace LGK.Inspector.StandardDrawer
             get { return typeof(long); }
         }
 
-        public void Draw(IFieldInfo fieldInfo, object owner)
+        public object Draw(IMemberInfo memberInfo, object memberValue)
         {
-            var value = (long)fieldInfo.GetValue(owner);
+            var value = (long)memberValue;
 
-            var newValue = EditorGUILayout.LongField(fieldInfo.Name, value);
-
-            if (value != newValue)
-                fieldInfo.SetValue(owner, newValue);
-        }
-
-        public void Draw(IPropertyInfo propertyInfo, object owner)
-        {
-            var value = (long)propertyInfo.GetValue(owner);
-
-            if (propertyInfo.IsReadOnly)
+            if (memberInfo.IsReadOnly)
             {
-                EditorGUILayout.LabelField(propertyInfo.Name, value.ToString());
+                EditorGUILayout.LabelField(memberInfo.Name, value.ToString());
             }
             else
             {
-                var newValue = EditorGUILayout.LongField(propertyInfo.Name, value);
-
-                if (value != newValue)
-                    propertyInfo.SetValue(owner, newValue);
+                return EditorGUILayout.LongField(memberInfo.Name, value);
             }
+
+            return memberValue;
         }
     }
 }

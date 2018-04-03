@@ -11,31 +11,23 @@ namespace LGK.Inspector.StandardDrawer
             get { return typeof(Vector3); }
         }
 
-        public void Draw(IFieldInfo fieldInfo, object owner)
+        public object Draw(IMemberInfo memberInfo, object memberValue)
         {
-            var value = (Vector3)fieldInfo.GetValue(owner);
+            var value = (Vector3)memberValue;
 
-            var newValue = EditorGUILayout.Vector3Field(fieldInfo.Name, value);
-
-            if (value.x != newValue.x || value.y != newValue.y || value.z != newValue.z)
-                fieldInfo.SetValue(owner, newValue);
-        }
-
-        public void Draw(IPropertyInfo propertyInfo, object owner)
-        {
-            var value = (Vector3)propertyInfo.GetValue(owner);
-
-            if (propertyInfo.IsReadOnly)
+            if (memberInfo.IsReadOnly)
             {
-                EditorGUILayout.LabelField(propertyInfo.Name, value.ToString());
+                EditorGUILayout.LabelField(memberInfo.Name, value.ToString());
             }
             else
             {
-                var newValue = EditorGUILayout.Vector3Field(propertyInfo.Name, value);
+                var newValue = EditorGUILayout.Vector3Field(memberInfo.Name, value);
 
                 if (value.x != newValue.x || value.y != newValue.y || value.z != newValue.z)
-                    propertyInfo.SetValue(owner, newValue);
+                    return newValue;
             }
+
+            return memberValue;
         }
     }
 }

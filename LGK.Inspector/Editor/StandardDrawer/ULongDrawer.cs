@@ -13,18 +13,13 @@ namespace LGK.Inspector.StandardDrawer
             get { return typeof(ulong); }
         }
 
-        public void Draw(IFieldInfo fieldInfo, object owner)
+        public object Draw(IMemberInfo memberInfo, object memberValue)
         {
-            var value = (ulong)fieldInfo.GetValue(owner);
+            var value = (ulong)memberValue;
 
-            EditorGUILayout.LabelField(fieldInfo.Name, value.ToString());
-        }
+            EditorGUILayout.LabelField(memberInfo.Name, value.ToString());
 
-        public void Draw(IPropertyInfo propertyInfo, object owner)
-        {
-            var value = (ulong)propertyInfo.GetValue(owner);
-
-            EditorGUILayout.LabelField(propertyInfo.Name, value.ToString());
+            return memberValue;
         }
     }
 }

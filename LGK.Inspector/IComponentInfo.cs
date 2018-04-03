@@ -1,7 +1,9 @@
 // See LICENSE file in the root directory
 //
 
+using LGK.Inspector.Internal;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace LGK.Inspector
@@ -14,9 +16,7 @@ namespace LGK.Inspector
 
         object Value { get; }
 
-        IFieldInfo[] Fields { get; }
-
-        IPropertyInfo[] Properties { get; }
+        IList<IInternalMemberInfo> Members { get; }
 
         bool ToggleView { get; set; }
     }
@@ -29,13 +29,11 @@ namespace LGK.Inspector
 
         public Type ComponentType { get; private set; }
 
-        public IFieldInfo[] Fields { get; private set; }
-
-        public IPropertyInfo[] Properties { get; private set; }
+        public IList<IInternalMemberInfo> Members { get; private set; }
 
         public bool ToggleView { get; set; }
 
-        public ComponentInfo(Object value, Type type, IFieldInfo[] fields, IPropertyInfo[] properties)
+        protected ComponentInfo(Object value, Type type)
         {
             Value = value;
 
@@ -45,8 +43,12 @@ namespace LGK.Inspector
                 Name = type.Name;
 
             ComponentType = type;
-            Fields = fields;
-            Properties = properties;
+        }
+
+        public ComponentInfo(Object value, Type type, IList<IInternalMemberInfo> members) 
+            : this(value, type)
+        {
+            Members = members;
         }
 
         string CreateGenericName(Type type)

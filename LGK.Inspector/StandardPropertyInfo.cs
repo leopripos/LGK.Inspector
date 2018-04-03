@@ -1,34 +1,23 @@
 // See LICENSE file in the root directory
 //
 
+using LGK.Inspector.Internal;
 using System;
 using ReflectionProperty = System.Reflection.PropertyInfo;
 
 namespace LGK.Inspector
 {
-    public interface IPropertyInfo
-    {
-        string Name { get; }
-
-        Type PropertyType { get; }
-
-        bool IsReadOnly { get; }
-
-        object GetValue(object owner);
-
-        void SetValue(object owner, object value);
-    }
-
-    public class ReflectionPropertyInfoWrapper : IPropertyInfo
+    public class StandardPropertyInfo : IInternalMemberInfo
     {
         readonly ReflectionProperty m_ReflectionPropertyInfo;
 
         public string Name
         {
-            get { return m_ReflectionPropertyInfo.Name; }
+            get;
+            private set;
         }
 
-        public Type PropertyType
+        public Type TargetType
         {
             get { return m_ReflectionPropertyInfo.PropertyType; }
         }
@@ -36,6 +25,18 @@ namespace LGK.Inspector
         public bool IsReadOnly
         {
             get { return !m_ReflectionPropertyInfo.CanWrite; }
+        }
+
+        public bool IsContainer
+        {
+            get;
+            private set;
+        }
+
+        public byte ChildCount
+        {
+            get;
+            internal set;
         }
 
         public object GetValue(object owner)
@@ -48,9 +49,19 @@ namespace LGK.Inspector
             m_ReflectionPropertyInfo.SetValue(owner, value, null);
         }
 
-        public ReflectionPropertyInfoWrapper(ReflectionProperty reflectionFieldInfo)
+        public StandardPropertyInfo(ReflectionProperty reflectionFieldInfo, bool isContainer)
         {
             m_ReflectionPropertyInfo = reflectionFieldInfo;
+
+            if (reflectionFieldInfo.PropertyType.IsArray)
+            {
+                Name = m_ReflectionPropertyInfo.Name + " []";
+            }
+            else {
+                Name = m_ReflectionPropertyInfo.Name;
+            }
+
+            IsContainer = isContainer;
         }
     }
 }

@@ -9,6 +9,7 @@ using UnityEngine;
 namespace LGK.Inspector
 {
     [CustomEditor(typeof(EntityInspector))]
+    [InitializeOnLoad]
     public class EntityInspectorEditor : Editor
     {
         static readonly IComponentDrawer m_DefaultComponentDrawer;
@@ -23,6 +24,8 @@ namespace LGK.Inspector
             m_ComponentDrawers = DrawerCollector.CollectComponentDrawers(m_TypeDrawers);
 
             m_DefaultComponentDrawer = new DefaultComponentDrawer(m_TypeDrawers);
+
+            InspectorUtility.Setup(m_TypeDrawers);
         }
 
         public override void OnInspectorGUI()
