@@ -11,17 +11,17 @@ namespace LGK.Inspector.StandardDrawer
             get { return typeof(Vector2); }
         }
 
-        public object Draw(IMemberInfo memberInfo, object memberValue)
+        public object Draw(IMemberInfo memberInfo, object memberValue, string label)
         {
             var value = (Vector2)memberValue;
 
             if (memberInfo.IsReadOnly)
             {
-                EditorGUILayout.LabelField(memberInfo.Name, value.ToString());
+                EditorGUILayout.LabelField(label, value.ToString());
             }
             else
             {
-                var newValue = EditorGUILayout.Vector2Field(memberInfo.Name, value);
+                var newValue = EditorGUILayout.Vector2Field(label, value);
 
                 if (value.x != newValue.x || value.y != newValue.y)
                     return newValue;

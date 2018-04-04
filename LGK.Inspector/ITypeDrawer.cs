@@ -9,7 +9,7 @@ namespace LGK.Inspector
     {
         Type TargetType { get; }
 
-        object Draw(IMemberInfo memberInfo, object memberValue);
+        object Draw(IMemberInfo memberInfo, object memberValue, string label);
     }
 }
 

@@ -9,5 +9,4 @@ namespace LGK.Inspector
         public const byte Field = 1;
         public const byte Property = 1 << 1;
     }
-
 }

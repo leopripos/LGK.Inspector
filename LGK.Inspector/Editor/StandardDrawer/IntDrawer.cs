@@ -13,17 +13,17 @@ namespace LGK.Inspector.StandardDrawer
             get { return typeof(int); }
         }
 
-        public object Draw(IMemberInfo memberInfo, object memberValue)
+        public object Draw(IMemberInfo memberInfo, object memberValue, string label)
         {
             var value = (int)memberValue;
 
             if (memberInfo.IsReadOnly)
             {
-                EditorGUILayout.LabelField(memberInfo.Name, value.ToString());
+                EditorGUILayout.LabelField(label, value.ToString());
             }
             else
             {
-                return EditorGUILayout.IntField(memberInfo.Name, value);
+                return EditorGUILayout.IntField(label, value);
             }
 
             return memberValue;

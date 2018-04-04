@@ -21,7 +21,7 @@ namespace LGK.Inspector
 
         void IComponentDrawer.Draw(IComponentInfo componentInfo)
         {
-            componentInfo.ToggleView = GUILayout.Toggle(componentInfo.ToggleView, componentInfo.Name, EditorStyles.foldout);
+            componentInfo.ToggleView = EditorGUILayout.Foldout(componentInfo.ToggleView, componentInfo.Name, EditorStyles.foldout);
 
             if (componentInfo.ToggleView)
             {

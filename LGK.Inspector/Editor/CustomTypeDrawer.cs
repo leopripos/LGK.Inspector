@@ -17,6 +17,6 @@ namespace LGK.Inspector
 
         public abstract Type TargetType { get; }
 
-        public abstract object Draw(IMemberInfo memberInfo, object memberValue);
+        public abstract object Draw(IMemberInfo memberInfo, object memberValue, string label);
     }
 }

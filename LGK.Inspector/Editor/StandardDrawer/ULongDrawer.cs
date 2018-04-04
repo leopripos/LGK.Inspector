@@ -13,11 +13,11 @@ namespace LGK.Inspector.StandardDrawer
             get { return typeof(ulong); }
         }
 
-        public object Draw(IMemberInfo memberInfo, object memberValue)
+        public object Draw(IMemberInfo memberInfo, object memberValue, string label)
         {
             var value = (ulong)memberValue;
 
-            EditorGUILayout.LabelField(memberInfo.Name, value.ToString());
+            EditorGUILayout.LabelField(label, value.ToString());
 
             return memberValue;
         }

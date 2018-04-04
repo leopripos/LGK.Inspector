@@ -5,7 +5,6 @@ using LGK.Inspector.Internal;
 using System;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
 
 namespace LGK.Inspector
 {
@@ -122,7 +121,7 @@ namespace LGK.Inspector
                 DrawEnum(memberInfo, owner);
             else
             {
-                DrawType(memberInfo, owner);
+                DrawType(memberInfo, owner, memberInfo.Name);
             }
         }
 
@@ -143,7 +142,7 @@ namespace LGK.Inspector
                     for (int i = 0; i < value.Length; i++)
                     {
                         var itemValue = value.GetValue(i);
-                        var newItemValue = typeDrawer.Draw(memberInfo, itemValue);
+                        var newItemValue = typeDrawer.Draw(memberInfo, itemValue, "[" + i.ToString() + "]");
 
                         if (newItemValue != value)
                             value.SetValue(newItemValue, i);
@@ -154,7 +153,7 @@ namespace LGK.Inspector
                     var array = (Array)memberInfo.GetValue(owner);
                     for (int i = 0; i < array.Length; i++)
                     {
-                        DrawDefault(memberInfo, array.GetValue(i));
+                        DrawDefault(memberInfo, array.GetValue(i), "[" + i.ToString() + "]");
                     }
                 }
 
@@ -179,31 +178,31 @@ namespace LGK.Inspector
             }
         }
 
-        void DrawType(IInternalMemberInfo memberInfo, object owner)
+        void DrawType(IInternalMemberInfo memberInfo, object owner, string label)
         {
             var value = memberInfo.GetValue(owner);
 
             ITypeDrawer typeDrawer;
             if (m_TypeDrawers.TryGetValue(memberInfo.TargetType, out typeDrawer))
             {
-                var newValue = typeDrawer.Draw(memberInfo, value);
+                var newValue = typeDrawer.Draw(memberInfo, value, label);
 
                 if (newValue != value)
                     memberInfo.SetValue(owner, newValue);
             }
             else
-                DrawDefault(memberInfo, value);
+                DrawDefault(memberInfo, value, label);
         }
 
-        void DrawDefault(IInternalMemberInfo memberInfo, object memberValue)
+        void DrawDefault(IInternalMemberInfo memberInfo, object memberValue, string label)
         {
             if (memberInfo.TargetType.IsValueType)
             {
-                EditorGUILayout.LabelField(memberInfo.Name, memberValue.ToString());
+                EditorGUILayout.LabelField(label, memberValue.ToString());
             }
             else
             {
-                EditorGUILayout.LabelField(memberInfo.Name, memberValue == null ? "null (" + memberInfo.TargetType.Name + ")" : memberInfo.TargetType.Name);
+                EditorGUILayout.LabelField(label, memberValue == null ? "null (" + memberInfo.TargetType.Name + ")" : memberInfo.TargetType.Name);
             }
         }
     }
