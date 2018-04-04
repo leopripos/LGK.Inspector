@@ -91,7 +91,9 @@ namespace LGK.Inspector
                     var field = reflectionFields[i];
                     var fieldType = field.FieldType.IsArray ? field.FieldType.GetElementType() : field.FieldType;
 
-                    if (fieldType.IsClass && !m_TypeDrawers.ContainsKey(fieldType) && level <= MAX_MEMBER_LEVEL)
+                    var isContainer = fieldType.IsClass || (fieldType.IsValueType && !fieldType.IsEnum); // checking IsClass or IsStruct
+
+                    if (isContainer && !m_TypeDrawers.ContainsKey(fieldType) && level <= MAX_MEMBER_LEVEL)
                     {
                         var fieldInfo = new StandardFieldInfo(field, true);
                         fieldsCollector.Add(fieldInfo);
@@ -127,7 +129,9 @@ namespace LGK.Inspector
                     var property = reflectionProperties[i];
                     var propertyType = property.PropertyType.IsArray ? property.PropertyType.GetElementType() : property.PropertyType;
 
-                    if (propertyType.IsClass && !m_TypeDrawers.ContainsKey(propertyType) && level <= MAX_MEMBER_LEVEL)
+                    var isContainer = propertyType.IsClass || (propertyType.IsValueType && !propertyType.IsEnum); // checking IsClass or IsStruct
+
+                    if (isContainer && !m_TypeDrawers.ContainsKey(propertyType) && level <= MAX_MEMBER_LEVEL)
                     {
                         var propertyInfo = new StandardPropertyInfo(property, true);
                         propertyCollector.Add(propertyInfo);
