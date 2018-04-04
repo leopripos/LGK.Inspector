@@ -10,8 +10,9 @@ This is simple inspector for Unity Game Engine for Svelto.ECS (https://github.co
 * Support property (setter/getter only)
 * Support custom component drawer (like unity custom inspector)
 * Support custom type drawer (like unity property drawer)
-* \** Not Support colletion (array/list/dictionary)
-* \** Can't automatically draw class or struct (you need create your own type drawer)
+* Support array
+* Support nested type (class and struct)
+* \** Not Support List and Dictionary
 
 \** need suggestion how to implement this :D
 
@@ -43,5 +44,13 @@ public static class EInspectorMode
 }
 ```
 
+## Next Roadmap
+* Support IList<>
+* Support IDictionary<,>
+* Make it more beautiful :)
+
 ## Examples
 * Simple Example : https://github.com/NED-Studio/LGK.Inspector.Example
+
+## Screenshot
+<img src="https://raw.githubusercontent.com/NED-Studio/RepositoryResources/master/LGK.Inspector/Screenshot/Screenshot%20Example%201.PNG" height="500" alt="Screenshot 1"/><img src="https://raw.githubusercontent.com/NED-Studio/RepositoryResources/master/LGK.Inspector/Screenshot/Screenshot%20Example%202.PNG" height="500" alt="Screenshot 2"/>
