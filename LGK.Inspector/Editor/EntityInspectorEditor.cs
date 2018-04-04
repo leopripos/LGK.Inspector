@@ -54,7 +54,7 @@ namespace LGK.Inspector
             if (entityInfo.ToggleView)
             {
                 IComponentDrawer componentDrawer;
-                var defaultIndentLevel = EditorGUI.indentLevel;
+                var defaultIndentLevel = EditorGUI.indentLevel + 1;
 
                 var components = entityInfo.Components;
                 for (int cIndex = 0; cIndex < components.Length; cIndex++)
@@ -67,6 +67,8 @@ namespace LGK.Inspector
                     else
                         DrawDefault(componentInfo);
                 }
+
+                EditorGUI.indentLevel = defaultIndentLevel;
             }
         }
 
